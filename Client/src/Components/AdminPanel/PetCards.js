@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
+import api from '../../api'; // Import the Axios instance
 
 const PetCards = (props) => {
   const [showJustificationPopup, setShowJustificationPopup] = useState(false);
   const [showErrorPopup, setShowErrorPopup] = useState(false);
   const [showApproved, setShowApproved] = useState(false);
-  const [showDeletedSuccess, setshowDeletedSuccess] = useState(false);
+  const [showDeletedSuccess, setShowDeletedSuccess] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isApproving, setIsApproving] = useState(false);
 
@@ -26,17 +27,11 @@ const PetCards = (props) => {
   const handleApprove = async () => {
     setIsApproving(true);
     try {
-      const response = await fetch(`http://localhost:4000/approving/${props.pet._id}`, {
-        method: 'PUT',
-        body: JSON.stringify({
-          status: "Approved"
-        }),
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      })
+      const response = await api.put(`/pets/${props.pet.id}/approve`, {
+        status: "Approved"
+      });
 
-      if (!response.ok) {
+      if (response.status !== 200) {
         setShowErrorPopup(true);
       } else {
         setShowApproved(true);
@@ -46,34 +41,31 @@ const PetCards = (props) => {
     } finally {
       setIsApproving(false);
     }
-  }
+  };
 
   const deleteFormsAdoptedPet = async () => {
-    setIsDeleting(true)
+    setIsDeleting(true);
     try {
-      const deleteResponses = await fetch(`http://localhost:4000/form/delete/many/${props.pet._id}`, {
-        method: 'DELETE'
-      });
-      if (!deleteResponses.ok) {
+      const deleteResponse = await api.delete(`/adopt-forms/${props.pet.id}`);
+      if (deleteResponse.status !== 200) {
         throw new Error('Failed to delete forms');
       }
     } catch (err) {
-    }finally{
+      console.error('Error deleting forms:', err);
+    } finally {
       handleReject();
     }
-  }
+  };
 
   const handleReject = async () => {
     try {
-      const response = await fetch(`http://localhost:4000/delete/${props.pet._id}`, {
-        method: 'DELETE'
-      })
+      const response = await api.delete(`/pets/${props.pet.id}`);
 
-      if (!response.ok) {
+      if (response.status !== 200) {
         setShowErrorPopup(true);
         throw new Error('Failed to delete pet');
       } else {
-        setshowDeletedSuccess(true);
+        setShowDeletedSuccess(true);
       }
     } catch (err) {
       setShowErrorPopup(true);
@@ -81,13 +73,13 @@ const PetCards = (props) => {
     } finally {
       setIsDeleting(false);
     }
-  }
+  };
 
   return (
     <div className='req-containter'>
       <div className='pet-view-card'>
         <div className='pet-card-pic'>
-          <img src={`http://localhost:4000/images/${props.pet.filename}`} alt={props.pet.name} />
+          <img src={`http://localhost:8000/storage/${props.pet.image}`} alt={props.pet.name} />
         </div>
         <div className='pet-card-details'>
           <h2>{props.pet.name}</h2>
@@ -107,7 +99,7 @@ const PetCards = (props) => {
               )}
             </span>
           </p>
-          <p>{formatTimeAgo(props.pet.updatedAt)}</p>
+          <p>{formatTimeAgo(props.pet.updated_at)}</p>
         </div>
         <div className='app-rej-btn'>
           <button onClick={deleteFormsAdoptedPet} disabled={isDeleting || isApproving}>{isDeleting ? (<p>Deleting</p>) : (props.deleteBtnText)}</button>
@@ -150,28 +142,26 @@ const PetCards = (props) => {
               </p>
             </div>
             <button onClick={() => {
-              setShowApproved(!showApproved)
-              props.updateCards()
+              setShowApproved(!showApproved);
+              props.updateCards();
             }} className='close-btn'>
               Close <i className="fa fa-times"></i>
             </button>
           </div>
         )}
-
         {showDeletedSuccess && (
           <div className='popup'>
             <div className='popup-content'>
               <p>Deleted Successfully from Database...</p>
             </div>
             <button onClick={() => {
-              setshowDeletedSuccess(!showDeletedSuccess)
-              props.updateCards()
+              setShowDeletedSuccess(!showDeletedSuccess);
+              props.updateCards();
             }} className='close-btn'>
               Close <i className="fa fa-times"></i>
             </button>
           </div>
         )}
-
       </div>
     </div>
   );

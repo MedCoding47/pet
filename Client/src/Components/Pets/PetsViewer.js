@@ -17,14 +17,14 @@ const PetsViewer = (props) => {
   return (
     <div className='pet-view-card'>
       <div className='pet-card-pic'>
-        <img src={`http://localhost:4000/images/${props.pet.filename}`} alt={props.pet.name} />
+        <img src={`http://localhost:8000/storage/${props.pet.image}`} alt={props.pet.name} />
       </div>
       <div className='pet-card-details'>
         <h2>{props.pet.name}</h2>
         <p><b>Type:</b> {props.pet.type}</p>
         <p><b>Age:</b> {props.pet.age}</p>
         <p><b>Location:</b> {props.pet.area}</p>
-        <p>{formatTimeAgo(props.pet.updatedAt)}</p>
+        <p>{formatTimeAgo(props.pet.updated_at)}</p>
       </div>
       <div className='show-interest-btn'>
         <button onClick={togglePopup}>Show Interest <i className="fa fa-paw"></i></button>
@@ -32,7 +32,7 @@ const PetsViewer = (props) => {
       {showPopup && (
         <div className='popup'>
           <div className='popup-content'>
-            <AdoptForm closeForm={togglePopup} pet={props.pet}/>
+            <AdoptForm closeForm={togglePopup} pet={props.pet} />
           </div>
           <button onClick={togglePopup} className='close-btn'>
             Close <i className="fa fa-times"></i>

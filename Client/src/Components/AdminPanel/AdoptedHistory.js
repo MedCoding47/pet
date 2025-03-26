@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import api from '../../api'; // Import the Axios instance
 import AdoptedCards from './AdoptedCards';
 
 const AdoptedHistory = () => {
@@ -7,12 +8,8 @@ const AdoptedHistory = () => {
 
   const fetchAdoptedPets = async () => {
     try {
-      const response = await fetch('http://localhost:4000/adoptedPets');
-      if (!response.ok) {
-        throw new Error('An error occurred while fetching adopted pets');
-      }
-      const data = await response.json();
-      setRequests(data);
+      const response = await api.get('/adopted-pets');
+      setRequests(response.data);
     } catch (error) {
       console.error('Error fetching adopted pets:', error);
     } finally {
@@ -28,11 +25,10 @@ const AdoptedHistory = () => {
     <div className='pet-container'>
       {loading ? (
         <p>Loading...</p>
-      ) : 
-      requests.length > 0 ? (
+      ) : requests.length > 0 ? (
         requests.map((request) => (
           <AdoptedCards
-            key={request._id}
+            key={request.id}
             pet={request}
             updateCards={fetchAdoptedPets}
             deleteBtnText="Delete History"

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import PetsViewer from "./PetsViewer";
+import api from '../../api'; // Import the Axios instance
 
 const Pets = () => {
   const [filter, setFilter] = useState("all");
@@ -9,21 +10,21 @@ const Pets = () => {
   useEffect(() => {
     const fetchRequests = async () => {
       try {
-        const response = await fetch('http://localhost:4000/approvedPets')
-        if (!response.ok) {
-          throw new Error('An error occurred')
+        const response = await api.get("/pets");
+        if (response.status !== 200) {
+          throw new Error("An error occurred");
         }
-        const data = await response.json()
-        setPetsData(data)
+        const data = response.data;
+        setPetsData(data);
       } catch (error) {
-        console.log(error)
+        console.error("Error fetching pets:", error);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
     fetchRequests();
-  }, [])
+  }, []);
 
   const filteredPets = petsData.filter((pet) => {
     if (filter === "all") {
@@ -49,16 +50,15 @@ const Pets = () => {
         </select>
       </div>
       <div className="pet-container">
-        {loading ?
-          <p>Loading</p> : ((filteredPets.length > 0 ) ? (
-            filteredPets.map((petDetail, index) => (
-              <PetsViewer pet={petDetail} key={index} />
-            ))
-          ) : (
-            <p className="oops-msg">Oops!... No pets available</p>
-          )
-          )
-        }
+        {loading ? (
+          <p>Loading</p>
+        ) : filteredPets.length > 0 ? (
+          filteredPets.map((petDetail, index) => (
+            <PetsViewer pet={petDetail} key={index} />
+          ))
+        ) : (
+          <p className="oops-msg">Oops!... No pets available</p>
+        )}
       </div>
     </>
   );

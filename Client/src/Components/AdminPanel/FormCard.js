@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
+import api from '../../api'; // Import the Axios instance
 
 const FormCard = (props) => {
   const [showErrorPopup, setShowErrorPopup] = useState(false);
@@ -17,19 +18,13 @@ const FormCard = (props) => {
   const handleApprove = async () => {
     setIsApproving(true);
     try {
-      const response = await fetch(`http://localhost:4000/approving/${props.form.petId}`, {
-        method: 'PUT',
-        body: JSON.stringify({
-          email: props.form.email,
-          phone: props.form.phoneNo,
-          status: "Adopted"
-        }),
-        headers: {
-          'Content-Type': 'application/json'
-        }
+      const response = await api.put(`/adopt-forms/${props.form.id}/approve`, {
+        email: props.form.email,
+        phone: props.form.phoneNo,
+        status: "Adopted"
       });
 
-      if (!response.ok) {
+      if (response.status !== 200) {
         setShowErrorPopup(true);
       } else {
         setShowApproved(true);
@@ -40,30 +35,26 @@ const FormCard = (props) => {
       deleteFormAdoptedPet();
     }
   };
-  
+
   const deleteFormAdoptedPet = async () => {
     try {
-      const deleteResponse = await fetch(`http://localhost:4000/form/delete/many/${props.form.petId}`, {
-        method: 'DELETE'
-      });
-      if (!deleteResponse.ok) {
+      const deleteResponse = await api.delete(`/adopt-forms/${props.form.petId}`);
+      if (deleteResponse.status !== 200) {
         throw new Error('Failed to delete forms');
       }
     } catch (err) {
-    }finally{
+      console.error('Error deleting forms:', err);
+    } finally {
       setIsApproving(false);
     }
-  }
-
+  };
 
   const handleReject = async () => {
-    setIsDeleting(true)
+    setIsDeleting(true);
     try {
-      const response = await fetch(`http://localhost:4000/form/reject/${props.form._id}`, {
-        method: 'DELETE'
-      })
+      const response = await api.delete(`/adopt-forms/${props.form.id}`);
 
-      if (!response.ok) {
+      if (response.status !== 200) {
         setShowErrorPopup(true);
         throw new Error('Failed to delete form');
       } else {
@@ -75,7 +66,7 @@ const FormCard = (props) => {
     } finally {
       setIsDeleting(false);
     }
-  }
+  };
 
   return (
     <div className='req-containter'>
@@ -86,7 +77,7 @@ const FormCard = (props) => {
           <p><b>Living Situation: </b> {props.form.livingSituation}</p>
           <p><b>Previous Pet Experience: </b> {props.form.previousExperience}</p>
           <p><b>Having Other Pets? </b> {props.form.familyComposition}</p>
-          <p>{formatTimeAgo(props.form.updatedAt)}</p>
+          <p>{formatTimeAgo(props.form.updated_at)}</p>
         </div>
         <div className='app-rej-btn'>
           <button onClick={handleReject} disabled={isDeleting || isApproving}>{isDeleting ? (<p>Deleting</p>) : (props.deleteBtnText)}</button>
@@ -119,28 +110,26 @@ const FormCard = (props) => {
               </p>
             </div>
             <button onClick={() => {
-              props.updateCards()
-              setShowApproved(!showApproved)
+              props.updateCards();
+              setShowApproved(!showApproved);
             }} className='close-btn'>
               Close <i className="fa fa-times"></i>
             </button>
           </div>
         )}
-
         {showDeletedSuccess && (
           <div className='popup'>
             <div className='popup-content'>
               <p>Request Rejected Successfully...</p>
             </div>
             <button onClick={() => {
-              setShowDeletedSuccess(!showDeletedSuccess)
-              props.updateCards()
+              setShowDeletedSuccess(!showDeletedSuccess);
+              props.updateCards();
             }} className='close-btn'>
               Close <i className="fa fa-times"></i>
             </button>
           </div>
         )}
-
         {showDetailsPopup && (
           <div className='popup'>
             <div className='popup-content'>
@@ -150,14 +139,13 @@ const FormCard = (props) => {
               <p><b>Living Situation: </b> {props.form.livingSituation}</p>
               <p><b>Previous Pet Experience: </b> {props.form.previousExperience}</p>
               <p><b>Having Other Pets? </b> {props.form.familyComposition}</p>
-              <p>{formatTimeAgo(props.form.updatedAt)}</p>
+              <p>{formatTimeAgo(props.form.updated_at)}</p>
             </div>
             <button onClick={() => setShowDetailsPopup(false)} className='close-btn'>
               Close <i className="fa fa-times"></i>
             </button>
           </div>
         )}
-
       </div>
     </div>
   );

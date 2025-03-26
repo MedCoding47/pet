@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import api from '../../api'; // Import the Axios instance
 
 function AdoptForm(props) {
   const [email, setEmail] = useState("");
@@ -38,38 +39,29 @@ function AdoptForm(props) {
     }
 
     try {
+      setIsSubmitting(true);
 
-      setIsSubmitting(true)
+      const response = await api.post("/adopt-forms", {
+        email,
+        phoneNo,
+        livingSituation,
+        previousExperience,
+        familyComposition,
+        petId: props.pet.id,
+      });
 
-      const response = await fetch('http://localhost:4000/form/save', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          email,
-          phoneNo,
-          livingSituation,
-          previousExperience,
-          familyComposition,
-          petId: props.pet._id
-        })
-      })
-
-      if (!response.ok) {
-        setErrPopup(true)
+      if (response.status !== 201) {
+        setErrPopup(true);
         return;
       } else {
-        setSuccPopup(true)
+        setSuccPopup(true);
       }
-    }
-    catch (err) {
-      setErrPopup(true)
+    } catch (err) {
+      setErrPopup(true);
       console.error(err);
       return;
     } finally {
-      setIsSubmitting(false)
-
+      setIsSubmitting(false);
     }
 
     setEmailError(false);
@@ -87,7 +79,7 @@ function AdoptForm(props) {
       <div className="form-pet-container">
         <div className="pet-details">
           <div className="pet-pic">
-            <img src={`http://localhost:4000/images/${props.pet.filename}`} alt={props.pet.name} />
+            <img src={`http://localhost:8000/storage/${props.pet.image}`} alt={props.pet.name} />
           </div>
           <div className="pet-info">
             <h2>{props.pet.name}</h2>
@@ -98,7 +90,7 @@ function AdoptForm(props) {
               <b>Age:</b> {props.pet.age}
             </p>
             <p>
-              <b>Location:</b> {props.pet.location}
+              <b>Location:</b> {props.pet.area}
             </p>
           </div>
         </div>
@@ -108,9 +100,7 @@ function AdoptForm(props) {
               <div className="email-not-valid">
                 <label className="custom-label">Email:</label>
                 {emailError && (
-                  <p>
-                    Please provide valid email address.
-                  </p>
+                  <p>Please provide valid email address.</p>
                 )}
               </div>
               <input
@@ -165,9 +155,7 @@ function AdoptForm(props) {
             {ErrPopup && (
               <div className="popup">
                 <div className="popup-content">
-                  <h4>
-                    Oops!... Connection Error.
-                  </h4>
+                  <h4>Oops!... Connection Error.</h4>
                 </div>
                 <button onClick={(e) => (setErrPopup(!ErrPopup))} className="close-btn">
                   Close <i className="fa fa-times"></i>
@@ -177,9 +165,7 @@ function AdoptForm(props) {
             {SuccPopup && (
               <div className="popup">
                 <div className="popup-content">
-                  <h4>
-                    Adoption Form of {props.pet.name} is Submitted; we'll get in touch with you soon for further process.
-                  </h4>
+                  <h4>Adoption Form of {props.pet.name} is Submitted; we'll get in touch with you soon for further process.</h4>
                 </div>
                 <button onClick={(e) => {
                   setSuccPopup(!SuccPopup);

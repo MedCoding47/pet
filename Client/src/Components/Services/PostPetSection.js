@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import postPet from "./images/postPet.png";
+import api from '../../api'; // Import the Axios instance
 
 const PostPetSection = () => {
   const [name, setName] = useState("");
@@ -15,7 +16,7 @@ const PostPetSection = () => {
   const [type, setType] = useState("None");
   const [picture, setPicture] = useState(null);
   const [fileName, setFileName] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false); 
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (!isSubmitting) {
@@ -81,12 +82,13 @@ const PostPetSection = () => {
     }
 
     try {
-      const response = await fetch("http://localhost:4000/services", {
-        method: "POST",
-        body: formData,
+      const response = await api.post("/pets", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
       });
 
-      if (!response.ok) {
+      if (response.status !== 201) {
         throw new Error("Network response was not ok");
       }
 
@@ -110,7 +112,6 @@ const PostPetSection = () => {
     }
   };
 
-
   return (
     <section className="post-pet-section">
       <h2>Post a Pet for Adoption</h2>
@@ -131,7 +132,7 @@ const PostPetSection = () => {
           <input
             type="text"
             value={age}
-            onChange={(e) => {setAge(e.target.value);}}
+            onChange={(e) => { setAge(e.target.value); }}
           />
         </div>
 
