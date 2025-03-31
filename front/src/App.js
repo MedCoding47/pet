@@ -1,14 +1,18 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Navbar from "./Components/NavBar/Navbar";
 import Home from "./Components/Home/Home";
 import Footer from "./Components/Footer/Footer";
-import Services from "./Components/Services/Services";
-import Contact from "./Components/Contact/Contact";
 import Pets from "./Components/Pets/Pets";
 import AdoptForm from "./Components/AdoptForm/AdoptForm";
 import AdminLogin from "./Components/AdminPanel/AdminLogin";
+import AdminPanel from "./Components/AdminPanel/AdminPanel";
 import "./App.css";
+// Protected Route Component
+const ProtectedRoute = ({ children }) => {
+  const isAuthenticated = !!localStorage.getItem('admin-token');
+  return isAuthenticated ? children : <Navigate to="/admin" replace />;
+};
 
 const Layout = ({ children }) => (
   <>
@@ -31,22 +35,6 @@ const App = () => {
           } 
         />
         <Route 
-          path="/services" 
-          element={
-            <Layout>
-              <Services />
-            </Layout>
-          } 
-        />
-        <Route 
-          path="/contact" 
-          element={
-            <Layout>
-              <Contact />
-            </Layout>
-          } 
-        />
-        <Route 
           path="/pets" 
           element={
             <Layout>
@@ -62,10 +50,20 @@ const App = () => {
             </Layout>
           } 
         />
+        
+        {/* Admin Routes */}
+        <Route path="/admin" element={<AdminLogin />} />
         <Route 
-          path="/admin" 
-          element={<AdminLogin />} 
+          path="/admin/panel" 
+          element={
+            <ProtectedRoute>
+              <AdminPanel />
+            </ProtectedRoute>
+          } 
         />
+        
+        {/* Redirect any unknown paths to home */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
   );
