@@ -28,4 +28,6 @@ Route::options('/{any}', function () {
     return response()->json();
 })->where('any', '.*');
 
-// Temporary admin creation route (REMOVE AFTER USE!)
+Route::get('/pets', [PetController::class, 'index']);
+
+

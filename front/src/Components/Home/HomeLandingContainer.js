@@ -1,35 +1,30 @@
 import React from "react";
-import girlHoldingADog from "./images/girlHoldingADog.png";
-import homepageDog from "./images/homepageDog.png";
-import footPrint from "./images/footPrint.png";
 import { Link } from "react-router-dom";
+import heroImage from "./images/1.jpg";
 
 const HomeLandingContainer = (props) => {
   const scrollToTop = () => {
     window.scrollTo(0, 0);
   };
+
   return (
-    <div className="home-container">
-      <div className="homeContainer-left">
-        <div>
-          <p className="home-title">
-            <div className="home-titlePlusPng">
-            <p>Your Pets </p><img src={homepageDog} alt="Dog sitting"/>
-            </div>
-            Are Our
-            <br />
-            Priority
-          </p>
+    <div className="home-container" style={{ backgroundImage: `url(${heroImage})` }}>
+      <div className="home-content">
+        <div className="home-text-container">
+          <h1 className="home-title">
+            Adoptez votre nouveau compagnon
+          </h1>
           <p className="home-second-para">
-            {props.description}
+            {props.description || "La SPA recueille chaque année des milliers d'animaux abandonnés. Trouvez celui qui saura vous apporter bonheur et affection."}
           </p>
+          <div className="adopt-btn">
+            <Link to='./pets'>
+              <button className="Home-button" onClick={scrollToTop}>
+                Voir les animaux à adopter
+              </button>
+            </Link>
+          </div>
         </div>
-        <div className="adopt-btn">
-          <Link to='./pets'><button className="Home-button" onClick={scrollToTop}><p>Adopt a Pet</p><img src={footPrint} alt="footprint" /></button></Link>
-        </div>
-      </div>
-      <div className="homeContainer-right">
-        <img src={girlHoldingADog} alt='Girl holding a Dog'/>
       </div>
     </div>
   );

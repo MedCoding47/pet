@@ -7,6 +7,9 @@ import Pets from "./Components/Pets/Pets";
 import AdoptForm from "./Components/AdoptForm/AdoptForm";
 import AdminLogin from "./Components/AdminPanel/AdminLogin";
 import AdminPanel from "./Components/AdminPanel/AdminPanel";
+import axios from 'axios';
+import PetsViewer from './Components/Pets/PetsViewer';
+import { useEffect, useState } from 'react';
 import "./App.css";
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -23,7 +26,24 @@ const Layout = ({ children }) => (
 );
 
 const App = () => {
-  return (
+  const [pets, setPets] = useState([]);
+
+  useEffect(() => {
+    axios.get('http://localhost:8000/api/pets')
+      .then(response => {
+        // Vérifie que la réponse est bien un tableau
+        if (Array.isArray(response.data)) {
+          setPets(response.data);
+        } else {
+          console.error("Erreur : la réponse n'est pas un tableau.");
+        }
+      })
+      .catch(error => {
+        console.error("Erreur lors du chargement des animaux :", error);
+      });
+  }, []);
+  return (<>
+    
     <Router>
       <Routes>
         <Route 
@@ -38,7 +58,7 @@ const App = () => {
           path="/pets" 
           element={
             <Layout>
-              <Pets />
+              <PetsViewer pets={pets} />
             </Layout>
           } 
         />
@@ -66,6 +86,9 @@ const App = () => {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
+    
+    </>
+
   );
 };
 

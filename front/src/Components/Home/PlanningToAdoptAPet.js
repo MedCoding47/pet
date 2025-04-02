@@ -3,15 +3,26 @@ import Card from "./Card";
 
 const PlanningToAdoptAPet = () => {
   return (
-    <div className='planning-container'>
-        <h1>Planning to Adopt a Pet?</h1>
-        <div className='boxes-container'>
-            <Card title="The Joy of Pet Adoption" description="Bringing a pet into your life can be an incredibly rewarding experience, not just for you but for the furry friend you welcome into your home. There's a special kind of magic that comes with adopting any companion animal."/>
-            <Card title="A Guide to Pet Adoption" description="Are you considering adding a new pet to your family? Pet adoption is a wonderful option to consider. The journey of finding the ideal companion involves careful thought, research, and planning, but the rewards are immeasurable. "/>
-            <Card title="Healing Power of Animal" description="Animals have an extraordinary ability to touch our lives in profound ways, offering not only companionship but also a therapeutic bond that can positively impact our physical, mental, and emotional well-being"/>
-        </div>
+    <div className='adoption-guide-container'>
+      <h2>Prêt à adopter ?</h2>
+      <p className='subtitle'>Tout ce que vous devez savoir avant d'adopter</p>
+      
+      <div className='guide-cards'>
+        <Card 
+          title="Pourquoi adopter ?" 
+          description="Adopter un animal, c'est lui offrir une seconde chance. C'est aussi un acte responsable qui contribue à lutter contre l'abandon."
+        />
+        <Card 
+          title="Comment adopter ?" 
+          description="Rendez-vous dans l'un de nos refuges ou parcourez nos annonces en ligne. Nos équipes vous guideront dans votre choix."
+        />
+        <Card 
+          title="Nos engagements" 
+          description="Tous nos animaux sont identifiés, vaccinés et stérilisés. Nous veillons à leur bien-être avant et après l'adoption."
+        />
+      </div>
     </div>
-  )
+  );
 }
 
 export default PlanningToAdoptAPet;

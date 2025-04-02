@@ -1,66 +1,102 @@
 import React, { useEffect, useState } from "react";
 import PetsViewer from "./PetsViewer";
-import api from '../../api'; // Import the Axios instance
+import api from '../../api';
+import './Pets.css';
 
 const Pets = () => {
   const [filter, setFilter] = useState("all");
   const [petsData, setPetsData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchRequests = async () => {
+    const fetchPets = async () => {
       try {
+        setLoading(true);
+        setError(null);
         const response = await api.get("/pets");
+        
         if (response.status !== 200) {
-          throw new Error("An error occurred");
+          throw new Error(`HTTP error! Status: ${response.status}`);
         }
-        const data = response.data;
-        setPetsData(data);
-      } catch (error) {
-        console.error("Error fetching pets:", error);
+
+        if (!response.data || !Array.isArray(response.data)) {
+          throw new Error("Invalid data format received");
+        }
+
+        const validatedPets = response.data.map(pet => ({
+          id: pet.id || Math.random().toString(36).substr(2, 9),
+          name: pet.name || "Unnamed Pet",
+          type: pet.type || "Unknown",
+          age: pet.age || "Unknown",
+          area: pet.area || pet.location || "Unknown",
+          image: pet.image || null,
+          updated_at: pet.updated_at || new Date().toISOString()
+        }));
+
+        setPetsData(validatedPets);
+      } catch (err) {
+        console.error("Fetch error:", err);
+        setError(err.message || "Failed to load pets");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchRequests();
+    fetchPets();
   }, []);
 
-  const filteredPets = petsData.filter((pet) => {
-    if (filter === "all") {
-      return true;
-    }
-    return pet.type === filter;
-  });
+  const filteredPets = petsData.filter(pet => 
+    filter === "all" || pet.type.toLowerCase() === filter.toLowerCase()
+  );
 
   return (
-    <>
+    <div className="pets-page">
       <div className="filter-selection">
         <select
           value={filter}
-          onChange={(event) => setFilter(event.target.value)}
+          onChange={(e) => setFilter(e.target.value)}
+          aria-label="Filter pets by type"
         >
           <option value="all">All Pets</option>
           <option value="Dog">Dogs</option>
           <option value="Cat">Cats</option>
           <option value="Rabbit">Rabbits</option>
           <option value="Bird">Birds</option>
-          <option value="Fish">Fishs</option>
+          <option value="Fish">Fish</option>
           <option value="Other">Other</option>
         </select>
       </div>
+
+      {error && (
+        <div className="error-message">
+          <p>{error}</p>
+          <button onClick={() => window.location.reload()}>Retry</button>
+        </div>
+      )}
+
       <div className="pet-container">
         {loading ? (
-          <p>Loading</p>
+          <div className="loading-state">
+            <div className="spinner"></div>
+            <p>Loading pets...</p>
+          </div>
         ) : filteredPets.length > 0 ? (
-          filteredPets.map((petDetail, index) => (
-            <PetsViewer pet={petDetail} key={index} />
+          filteredPets.map(pet => (
+            <PetsViewer pet={pet} key={pet.id} />
           ))
         ) : (
-          <p className="oops-msg">Oops!... No pets available</p>
+          <div className="no-pets-message">
+            <p>No pets available matching your criteria</p>
+            {filter !== "all" && (
+              <button onClick={() => setFilter("all")}>
+                Show all pets
+              </button>
+            )}
+          </div>
         )}
       </div>
-    </>
+    </div>
   );
 };
 

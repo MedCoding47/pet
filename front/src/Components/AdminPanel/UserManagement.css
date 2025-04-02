@@ -1,0 +1,17 @@
+.user-card {
+    transition: transform 0.2s;
+    height: 100%;
+  }
+  
+  .user-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  }
+  
+  .search-box {
+    margin-bottom: 20px;
+  }
+  
+  .admin-badge {
+    font-size: 0.8rem;
+  }

@@ -23,25 +23,26 @@ class PetController extends Controller
             'age' => 'required|integer',
             'location' => 'required|string|max:255',
             'type' => 'required|string',
-            'breed' => 'nullable|string|max:255', // Add breed as optional
+            'breed' => 'nullable|string|max:255', // Breed is optional
             'picture' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
-    
-        // Store the image
-        $imagePath = $request->file('picture')->store('public/images');
-        $imageUrl = Storage::url($imagePath);
-    
-        // Create the pet
+
+        // Store the image in storage/app/public/images
+        $imagePath = $request->file('picture')->store('images', 'public');
+
+        // Generate the accessible URL
+        $imageUrl = asset('storage/' . $imagePath);
+
+        // Create the pet entry
         $pet = Pet::create([
             'name' => $request->name,
-            'breed' => $request->breed, // Make sure this field is present in the request
+            'breed' => $request->breed,
             'age' => $request->age,
             'location' => $request->location,
             'type' => $request->type,
             'image' => $imageUrl,
         ]);
-        
-    
+
         return response()->json($pet, 201);
     }
-}    
+}
