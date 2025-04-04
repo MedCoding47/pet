@@ -31,3 +31,17 @@ Route::options('/{any}', function () {
 Route::get('/pets', [PetController::class, 'index']);
 
 
+
+use App\Http\Controllers\AuthController;
+
+Route::prefix('client')->group(function () {
+    Route::post('/register', [AuthController::class, 'clientRegister']);
+    Route::post('/login', [AuthController::class, 'clientLogin']);
+});
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/user', function (Request $request) {
+        return $request->user();
+    });
+    Route::post('/logout', [AuthController::class, 'logout']);
+});

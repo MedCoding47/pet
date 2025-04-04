@@ -2,12 +2,12 @@
 
 
 return [
-    'paths' => ['api/*', 'sanctum/csrf-cookie'], // Allow CORS on all API routes
-    'allowed_methods' => ['*'], // Allow all HTTP methods
-    'allowed_origins' => ['http://localhost:3000'], // Allow requests from your React frontend
+    'paths' => ['api/*', 'sanctum/csrf-cookie'],
+    'allowed_methods' => ['*'],
+    'allowed_origins' => ['http://localhost:3000'], // Ajoutez votre URL frontend
     'allowed_origins_patterns' => [],
-    'allowed_headers' => ['*'], // Allow all headers
+    'allowed_headers' => ['*'],
     'exposed_headers' => [],
     'max_age' => 0,
-    'supports_credentials' => false,
+    'supports_credentials' => true,
 ];

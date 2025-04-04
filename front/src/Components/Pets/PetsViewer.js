@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import AdoptForm from '../AdoptForm/AdoptForm';
 import { formatDistanceToNow } from 'date-fns';
-import './PetsViewer.css'; // Assure-toi d'importer le CSS
+import './PetsViewer.css';
 
-const PetsViewer = ({ pets }) => { // pets est un tableau d'animaux
+const PetsViewer = ({ pets }) => {
   const [showPopup, setShowPopup] = useState(null);
+  const navigate = useNavigate();
 
   const togglePopup = (petId) => {
     setShowPopup(showPopup === petId ? null : petId);
@@ -24,8 +26,12 @@ const PetsViewer = ({ pets }) => { // pets est un tableau d'animaux
     return `http://localhost:8000/storage/${pet.image.replace('storage/', '')}`;
   };
 
+  const handleDetailsClick = (petId) => {
+    navigate(`/pets/${petId}`);
+  };
+
   if (!Array.isArray(pets)) {
-    return <p>Loading pets...</p>; // Affiche un message si pets n'est pas un tableau
+    return <p>Loading pets...</p>;
   }
 
   return (
@@ -52,9 +58,9 @@ const PetsViewer = ({ pets }) => { // pets est un tableau d'animaux
             <p>Updated {formatTimeAgo(pet.updated_at)}</p>
           </div>
 
-          <div className="show-interest-btn">
-            <button onClick={() => togglePopup(pet.id)}>
-              Show Interest <i className="fa fa-paw"></i>
+          <div className="details-btn">
+            <button onClick={() => handleDetailsClick(pet.id)}>
+              Details <i className="fa fa-info-circle"></i>
             </button>
           </div>
 

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Form, Button, Modal, Alert, Badge } from 'react-bootstrap';
-import UserCard from './UserCards';
+import { Container, Row, Col, Form, Button, Modal, Alert, Table, Badge } from 'react-bootstrap';
 import axios from 'axios';
 
 const UserManagement = () => {
@@ -23,18 +22,25 @@ const UserManagement = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await axios.get('/api/admin/users');
+      const response = await axios.get('http://localhost:8000/api/admin/users', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('admin-token')}`
+        }
+      });
       setUsers(response.data);
       setLoading(false);
     } catch (err) {
-      setError('Failed to fetch users');
+      setError('Failed to fetch users: ' + (err.response?.data?.message || err.message));
       setLoading(false);
     }
   };
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    const { name, value, type, checked } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
   };
 
   const handleEdit = (user) => {
@@ -50,11 +56,15 @@ const UserManagement = () => {
   const handleDelete = async (userId) => {
     if (window.confirm('Are you sure you want to delete this user?')) {
       try {
-        await axios.delete(`/api/admin/users/${userId}`);
+        await axios.delete(`http://localhost:8000/api/admin/users/${userId}`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('admin-token')}`
+          }
+        });
         setUsers(users.filter(user => user.id !== userId));
         setError('');
       } catch (err) {
-        setError('Failed to delete user');
+        setError('Failed to delete user: ' + (err.response?.data?.message || err.message));
       }
     }
   };
@@ -62,12 +72,26 @@ const UserManagement = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      const config = {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('admin-token')}`
+        }
+      };
+
       if (currentUser) {
-        await axios.put(`/api/admin/users/${currentUser.id}`, formData);
+        await axios.put(
+          `http://localhost:8000/api/admin/users/${currentUser.id}`,
+          formData,
+          config
+        );
       } else {
-        await axios.post('/api/admin/users', formData);
+        await axios.post(
+          'http://localhost:8000/api/admin/users',
+          formData,
+          config
+        );
       }
-      fetchUsers();
+      await fetchUsers();
       setShowModal(false);
       setError('');
     } catch (err) {
@@ -80,19 +104,19 @@ const UserManagement = () => {
     user.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  if (loading) return <div>Loading users...</div>;
+  if (loading) return <div className="text-center mt-4">Loading users...</div>;
 
   return (
     <Container className="mt-4">
-      <h2>User Management</h2>
+      <h2 className="mb-4">User Management</h2>
       
-      {error && <Alert variant="danger">{error}</Alert>}
+      {error && <Alert variant="danger" onClose={() => setError('')} dismissible>{error}</Alert>}
 
-      <Row className="mb-3">
+      <Row className="mb-4">
         <Col md={6}>
           <Form.Control
             type="text"
-            placeholder="Search users..."
+            placeholder="Search users by name or email..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -108,23 +132,58 @@ const UserManagement = () => {
         </Col>
       </Row>
 
-      <Row>
-        {filteredUsers.length > 0 ? (
-          filteredUsers.map(user => (
-            <Col md={4} key={user.id}>
-              <UserCard 
-                user={user} 
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-              />
-            </Col>
-          ))
-        ) : (
-          <Col>
-            <p>No users found</p>
-          </Col>
-        )}
-      </Row>
+      <div className="table-responsive">
+        <Table striped bordered hover>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredUsers.length > 0 ? (
+              filteredUsers.map(user => (
+                <tr key={user.id}>
+                  <td>{user.id}</td>
+                  <td>{user.name}</td>
+                  <td>{user.email}</td>
+                  <td>
+                    {user.is_admin ? (
+                      <Badge bg="danger">Admin</Badge>
+                    ) : (
+                      <Badge bg="success">User</Badge>
+                    )}
+                  </td>
+                  <td>
+                    <Button 
+                      variant="outline-primary" 
+                      size="sm" 
+                      onClick={() => handleEdit(user)}
+                      className="me-2"
+                    >
+                      Edit
+                    </Button>
+                    <Button 
+                      variant="outline-danger" 
+                      size="sm" 
+                      onClick={() => handleDelete(user.id)}
+                    >
+                      Delete
+                    </Button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="5" className="text-center">No users found</td>
+              </tr>
+            )}
+          </tbody>
+        </Table>
+      </div>
 
       <Modal show={showModal} onHide={() => setShowModal(false)}>
         <Modal.Header closeButton>
@@ -156,10 +215,10 @@ const UserManagement = () => {
               <Form.Check
                 type="switch"
                 id="is-admin-switch"
-                label="Admin User"
+                label="Admin Privileges"
                 name="is_admin"
                 checked={formData.is_admin}
-                onChange={(e) => setFormData({...formData, is_admin: e.target.checked})}
+                onChange={handleInputChange}
               />
             </Form.Group>
           </Modal.Body>
@@ -168,7 +227,7 @@ const UserManagement = () => {
               Cancel
             </Button>
             <Button variant="primary" type="submit">
-              {currentUser ? 'Update' : 'Create'}
+              {currentUser ? 'Update User' : 'Create User'}
             </Button>
           </Modal.Footer>
         </Form>
