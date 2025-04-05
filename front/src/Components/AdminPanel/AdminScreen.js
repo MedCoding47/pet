@@ -3,6 +3,7 @@ import PostingPets from './PostingPets';
 import AdoptingRequests from './AdoptingRequests';
 import AdoptedHistory from './AdoptedHistory';
 import ApprovedRequests from './ApprovedRequests';
+import ListerUtilisateurs from './UserManagement'
 import './AdminScreen.css';
 
 const AdminScreen = ({ currentScreen }) => {
@@ -19,6 +20,7 @@ const AdminScreen = ({ currentScreen }) => {
           {currentScreen === 'approvedRequests' && <ApprovedRequests />}
           {currentScreen === 'adoptingPet' && <AdoptingRequests />}
           {currentScreen === 'adoptedHistory' && <AdoptedHistory />}
+          {currentScreen === 'ListerUtilisateurs' && <ListerUtilisateurs />}
           {currentScreen === 'postPet' && <PostingPets />}
         </div>
       </div>

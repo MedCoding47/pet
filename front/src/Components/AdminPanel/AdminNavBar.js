@@ -38,8 +38,8 @@ const AdminNavBar = ({ setCurrentScreen }) => {
           </button>
         </li>
         <li>
-          <button onClick={() => setCurrentScreen('userManagement')}>
-            <FontAwesomeIcon icon={faUsers} /> User Management
+          <button onClick={() => setCurrentScreen('ListerUtilisateurs')}>
+            <FontAwesomeIcon icon={faUsers} />ListerUtilisateurs
           </button>
         </li>
         <li>

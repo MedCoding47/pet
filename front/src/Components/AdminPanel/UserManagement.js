@@ -13,6 +13,7 @@ const UserManagement = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    password: '',
     is_admin: false
   });
 
@@ -22,7 +23,7 @@ const UserManagement = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await axios.get('http://localhost:8000/api/admin/users', {
+      const response = await axios.get('http://localhost:8000/api/users', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('admin-token')}`
         }
@@ -48,7 +49,8 @@ const UserManagement = () => {
     setFormData({
       name: user.name,
       email: user.email,
-      is_admin: user.is_admin || false
+      password: '',
+      is_admin: user.is_admin
     });
     setShowModal(true);
   };
@@ -56,7 +58,7 @@ const UserManagement = () => {
   const handleDelete = async (userId) => {
     if (window.confirm('Are you sure you want to delete this user?')) {
       try {
-        await axios.delete(`http://localhost:8000/api/admin/users/${userId}`, {
+        await axios.delete(`http://localhost:8000/api/users/${userId}`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('admin-token')}`
           }
@@ -79,18 +81,25 @@ const UserManagement = () => {
       };
 
       if (currentUser) {
+        // Remove password field if empty to avoid updating with empty password
+        const dataToSend = {...formData};
+        if (!dataToSend.password) {
+          delete dataToSend.password;
+        }
+        
         await axios.put(
-          `http://localhost:8000/api/admin/users/${currentUser.id}`,
-          formData,
+          `http://localhost:8000/api/users/${currentUser.id}`,
+          dataToSend,
           config
         );
       } else {
         await axios.post(
-          'http://localhost:8000/api/admin/users',
+          'http://localhost:8000/api/users',
           formData,
           config
         );
       }
+      
       await fetchUsers();
       setShowModal(false);
       setError('');
@@ -124,7 +133,7 @@ const UserManagement = () => {
         <Col md={6} className="text-end">
           <Button variant="primary" onClick={() => {
             setCurrentUser(null);
-            setFormData({ name: '', email: '', is_admin: false });
+            setFormData({ name: '', email: '', password: '', is_admin: false });
             setShowModal(true);
           }}>
             Add New User
@@ -209,6 +218,17 @@ const UserManagement = () => {
                 value={formData.email}
                 onChange={handleInputChange}
                 required
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Password</Form.Label>
+              <Form.Control
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleInputChange}
+                placeholder={currentUser ? "Leave blank to keep current password" : ""}
+                required={!currentUser}
               />
             </Form.Group>
             <Form.Group className="mb-3">
