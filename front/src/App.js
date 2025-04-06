@@ -9,6 +9,7 @@ import { ClientAuthProvider } from "./Components/ClientPanel/ClientAuthContext";
 import ClientLogin from "./Components/ClientPanel/ClientLogin";
 import ClientRegister from "./Components/ClientPanel/ClientRegister";
 import ClientDashboard from "./Components/ClientPanel/ClientDashboard";
+import LoginPage from "./Components/NavBar/LoginPage"; // Importez le composant LoginPage
 import axios from 'axios';
 import PetsViewer from './Components/Pets/PetsViewer';
 import PetDetails from './Components/Pets/PetDetails';
@@ -84,6 +85,9 @@ const App = () => {
               </Layout>
             } 
           />
+          
+          {/* Page de connexion */}
+          <Route path="/connexion" element={<LoginPage />} />
           
           {/* Client Auth Routes */}
           <Route path="/client/login" element={<ClientLogin />} />

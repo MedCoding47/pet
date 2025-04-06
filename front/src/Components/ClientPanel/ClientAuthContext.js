@@ -13,6 +13,7 @@ export const ClientAuthProvider = ({ children }) => {
   const [client, setClient] = useState(null);
   const [token, setToken] = useState(localStorage.getItem('client_token'));
   const [loading, setLoading] = useState(true);
+  const [authChecked, setAuthChecked] = useState(false);
   const navigate = useNavigate();
 
   // Configuration des headers axios
@@ -27,24 +28,51 @@ export const ClientAuthProvider = ({ children }) => {
 
   const loadClient = async () => {
     try {
+      console.log('Chargement du client...');
       const { data } = await api.get('/api/user');
+      console.log('Réponse de l\'API:', data);
+      
       if (!data.is_admin) {
         setClient(data);
+        console.log('Client chargé avec succès:', data);
       } else {
-        await logout(); // Utilisation correcte de la fonction logout
+        console.log('Utilisateur est un admin, déconnexion...');
+        await silentLogout();
       }
     } catch (error) {
-      console.error('Erreur chargement client:', error);
-      await logout(); // Utilisation correcte de la fonction logout
+      console.error('Erreur chargement client:', error.response?.data || error.message);
+      
+      // Si l'erreur n'est pas 401, ne déconnectez pas l'utilisateur
+      if (error.response?.status === 401) {
+        console.log('Token invalide, déconnexion silencieuse');
+        await silentLogout();
+      }
     } finally {
       setLoading(false);
+      setAuthChecked(true);
     }
   };
 
+  // Vérification d'authentification initiale
   useEffect(() => {
-    if (token) loadClient();
-    else setLoading(false);
-  }, [token]);
+    const checkAuth = async () => {
+      if (token) {
+        await loadClient();
+      } else {
+        setLoading(false);
+        setAuthChecked(true);
+      }
+    };
+    
+    checkAuth();
+  }, [token]); // Exécuter chaque fois que le token change
+
+  // Déconnexion silencieuse sans navigation
+  const silentLogout = async () => {
+    localStorage.removeItem('client_token');
+    setToken(null);
+    setClient(null);
+  };
 
   const register = async (name, email, password, password_confirmation) => {
     try {
@@ -79,12 +107,12 @@ export const ClientAuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
+      // Utilisez l'endpoint correct selon votre API
       await api.post('/api/logout');
+    } catch (error) {
+      console.error('Erreur de déconnexion:', error.response?.data || error.message);
     } finally {
-      localStorage.removeItem('client_token');
-      delete api.defaults.headers.common['Authorization'];
-      setClient(null);
-      setToken(null);
+      await silentLogout();
       navigate('/client/login');
     }
   };
@@ -94,12 +122,13 @@ export const ClientAuthProvider = ({ children }) => {
       client,
       token,
       register,
-      login, // Fonction bien définie maintenant
-      logout, // Fonction bien définie maintenant
+      login,
+      logout,
       loading,
+      authChecked,
       isAuthenticated: !!client
     }}>
-      {children}
+      {!authChecked ? null : children}
     </ClientAuthContext.Provider>
   );
 };
