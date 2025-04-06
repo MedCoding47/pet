@@ -1,7 +1,15 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSignOutAlt, faUsers, faUserCog } from '@fortawesome/free-solid-svg-icons';
+import { 
+  faSignOutAlt, 
+  faUsers, 
+  faPaw, 
+  faClipboardList, 
+  faHistory, 
+  faPlus,
+  faTachometerAlt
+} from '@fortawesome/free-solid-svg-icons';
 
 const AdminNavBar = ({ setCurrentScreen }) => {
   const navigate = useNavigate();
@@ -12,43 +20,59 @@ const AdminNavBar = ({ setCurrentScreen }) => {
   };
 
   return (
-    <header className="admin-header">
+    <div className="sidebar">
       <div className="logo">
-        <p><span>Admin</span>Panel</p>
+        <h2><span>Pet</span>Admin</h2>
       </div>
-      <ul className="menu">
-        <li>
+      <ul className="nav-menu">
+        <li className="nav-item">
+          <button onClick={() => setCurrentScreen('dashboard')}>
+            <FontAwesomeIcon icon={faTachometerAlt} />
+            <span>Dashboard</span>
+          </button>
+        </li>
+        <li className="nav-item">
           <button onClick={() => setCurrentScreen('approvedRequests')}>
-            Approved Pets
+            <FontAwesomeIcon icon={faPaw} />
+            <span>Approved Pets</span>
           </button>
         </li>
-        <li>
+        <li className="nav-item">
           <button onClick={() => setCurrentScreen('adoptingPet')}>
-            Adoption Requests
+            <FontAwesomeIcon icon={faClipboardList} />
+            <span>Adoption Requests</span>
           </button>
         </li>
-        <li>
+        <li className="nav-item">
           <button onClick={() => setCurrentScreen('adoptedHistory')}>
-            Adopted History
+            <FontAwesomeIcon icon={faHistory} />
+            <span>Adopted History</span>
           </button>
         </li>
-        <li>
+        <li className="nav-item">
           <button onClick={() => setCurrentScreen('postPet')}>
-            Post a Pet
+            <FontAwesomeIcon icon={faPlus} />
+            <span>Post a Pet</span>
           </button>
         </li>
-        <li>
+        <li className="nav-item">
           <button onClick={() => setCurrentScreen('ListerUtilisateurs')}>
-            <FontAwesomeIcon icon={faUsers} />ListerUtilisateurs
+            <FontAwesomeIcon icon={faUsers} />
+            <span>Users</span>
           </button>
         </li>
-        <li>
-          <button onClick={handleLogout} className="logout-btn">
-            <FontAwesomeIcon icon={faSignOutAlt} /> Logout
+        <li className="nav-item">
+          <button onClick={() => setCurrentScreen('AdminPetDashboard')}>
+           <span>pet management</span>
           </button>
         </li>
       </ul>
-    </header>
+      <div className="sidebar-footer">
+        <button onClick={handleLogout} className="logout-btn">
+          <FontAwesomeIcon icon={faSignOutAlt} /> Logout
+        </button>
+      </div>
+    </div>
   );
 };
 

@@ -3,27 +3,21 @@ import PostingPets from './PostingPets';
 import AdoptingRequests from './AdoptingRequests';
 import AdoptedHistory from './AdoptedHistory';
 import ApprovedRequests from './ApprovedRequests';
-import ListerUtilisateurs from './UserManagement'
+import ListerUtilisateurs from './UserManagement';
+import AdminPetDashboard from './AdminPetDashboard'
+import Dashboard from './Dashboard';
 import './AdminScreen.css';
 
 const AdminScreen = ({ currentScreen }) => {
   return (
     <div className="admin-screen">
-      <div className="welcome-container">
-        <h2>Welcome</h2>
-        <p>Responsable Name: Admin User</p>
-      </div>
-
-      <div className="admin-sections">
-        <div className="pet-content">
-          {currentScreen === 'postingPet' && <PostingPets />}
-          {currentScreen === 'approvedRequests' && <ApprovedRequests />}
-          {currentScreen === 'adoptingPet' && <AdoptingRequests />}
-          {currentScreen === 'adoptedHistory' && <AdoptedHistory />}
-          {currentScreen === 'ListerUtilisateurs' && <ListerUtilisateurs />}
-          {currentScreen === 'postPet' && <PostingPets />}
-        </div>
-      </div>
+      {currentScreen === 'dashboard' && <Dashboard />}
+      {currentScreen === 'postPet' && <PostingPets />}
+      {currentScreen === 'approvedRequests' && <ApprovedRequests />}
+      {currentScreen === 'adoptingPet' && <AdoptingRequests />}
+      {currentScreen === 'adoptedHistory' && <AdoptedHistory />}
+      {currentScreen === 'ListerUtilisateurs' && <ListerUtilisateurs />}
+      {currentScreen === 'AdminPetDashboard' && <AdminPetDashboard />}
     </div>
   );
 };

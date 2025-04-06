@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Form, Button, Modal, Alert, Table, Badge } from 'react-bootstrap';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEdit, faTrash, faPlus, faSearch } from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
+import './UserManagement.css';
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
@@ -113,146 +115,160 @@ const UserManagement = () => {
     user.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  if (loading) return <div className="text-center mt-4">Loading users...</div>;
+  if (loading) return <div className="loading-spinner">Loading users...</div>;
 
   return (
-    <Container className="mt-4">
-      <h2 className="mb-4">User Management</h2>
-      
-      {error && <Alert variant="danger" onClose={() => setError('')} dismissible>{error}</Alert>}
+    <div className="user-management">
+      <div className="card">
+        <div className="card-header">
+          <h3 className="chart-title">User Management</h3>
+          <div className="header-actions">
+            <button className="button-primary" onClick={() => {
+              setCurrentUser(null);
+              setFormData({ name: '', email: '', password: '', is_admin: false });
+              setShowModal(true);
+            }}>
+              <FontAwesomeIcon icon={faPlus} /> Add New User
+            </button>
+          </div>
+        </div>
+        
+        {error && (
+          <div className="alert-danger">
+            <p>{error}</p>
+            <button onClick={() => setError('')}>×</button>
+          </div>
+        )}
 
-      <Row className="mb-4">
-        <Col md={6}>
-          <Form.Control
-            type="text"
-            placeholder="Search users by name or email..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </Col>
-        <Col md={6} className="text-end">
-          <Button variant="primary" onClick={() => {
-            setCurrentUser(null);
-            setFormData({ name: '', email: '', password: '', is_admin: false });
-            setShowModal(true);
-          }}>
-            Add New User
-          </Button>
-        </Col>
-      </Row>
+        <div className="search-control">
+          <div className="search-input-wrapper">
+            <FontAwesomeIcon icon={faSearch} className="search-icon" />
+            <input
+              type="text"
+              placeholder="Search users by name or email..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="search-input"
+            />
+          </div>
+        </div>
 
-      <div className="table-responsive">
-        <Table striped bordered hover>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Role</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredUsers.length > 0 ? (
-              filteredUsers.map(user => (
-                <tr key={user.id}>
-                  <td>{user.id}</td>
-                  <td>{user.name}</td>
-                  <td>{user.email}</td>
-                  <td>
-                    {user.is_admin ? (
-                      <Badge bg="danger">Admin</Badge>
-                    ) : (
-                      <Badge bg="success">User</Badge>
-                    )}
-                  </td>
-                  <td>
-                    <Button 
-                      variant="outline-primary" 
-                      size="sm" 
-                      onClick={() => handleEdit(user)}
-                      className="me-2"
-                    >
-                      Edit
-                    </Button>
-                    <Button 
-                      variant="outline-danger" 
-                      size="sm" 
-                      onClick={() => handleDelete(user.id)}
-                    >
-                      Delete
-                    </Button>
-                  </td>
-                </tr>
-              ))
-            ) : (
+        <div className="table-container">
+          <table className="admin-table">
+            <thead>
               <tr>
-                <td colSpan="5" className="text-center">No users found</td>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Actions</th>
               </tr>
-            )}
-          </tbody>
-        </Table>
+            </thead>
+            <tbody>
+              {filteredUsers.length > 0 ? (
+                filteredUsers.map(user => (
+                  <tr key={user.id}>
+                    <td>{user.id}</td>
+                    <td>{user.name}</td>
+                    <td>{user.email}</td>
+                    <td>
+                      <span className={`badge ${user.is_admin ? 'badge-danger' : 'badge-success'}`}>
+                        {user.is_admin ? 'Admin' : 'User'}
+                      </span>
+                    </td>
+                    <td>
+                      <div className="action-buttons">
+                        <button 
+                          className="button-edit"
+                          onClick={() => handleEdit(user)}
+                        >
+                          <FontAwesomeIcon icon={faEdit} />
+                        </button>
+                        <button 
+                          className="button-delete"
+                          onClick={() => handleDelete(user.id)}
+                        >
+                          <FontAwesomeIcon icon={faTrash} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="5" className="text-center">No users found</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      <Modal show={showModal} onHide={() => setShowModal(false)}>
-        <Modal.Header closeButton>
-          <Modal.Title>{currentUser ? 'Edit User' : 'Create User'}</Modal.Title>
-        </Modal.Header>
-        <Form onSubmit={handleSubmit}>
-          <Modal.Body>
-            <Form.Group className="mb-3">
-              <Form.Label>Name</Form.Label>
-              <Form.Control
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleInputChange}
-                required
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Email</Form.Label>
-              <Form.Control
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                required
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Password</Form.Label>
-              <Form.Control
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleInputChange}
-                placeholder={currentUser ? "Leave blank to keep current password" : ""}
-                required={!currentUser}
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Check
-                type="switch"
-                id="is-admin-switch"
-                label="Admin Privileges"
-                name="is_admin"
-                checked={formData.is_admin}
-                onChange={handleInputChange}
-              />
-            </Form.Group>
-          </Modal.Body>
-          <Modal.Footer>
-            <Button variant="secondary" onClick={() => setShowModal(false)}>
-              Cancel
-            </Button>
-            <Button variant="primary" type="submit">
-              {currentUser ? 'Update User' : 'Create User'}
-            </Button>
-          </Modal.Footer>
-        </Form>
-      </Modal>
-    </Container>
+      {showModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h3>{currentUser ? 'Edit User' : 'Create User'}</h3>
+              <button className="modal-close" onClick={() => setShowModal(false)}>×</button>
+            </div>
+            <form onSubmit={handleSubmit}>
+              <div className="modal-body">
+                <div className="form-group">
+                  <label>Name</label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Email</label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Password</label>
+                  <input
+                    type="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    placeholder={currentUser ? "Leave blank to keep current password" : ""}
+                    required={!currentUser}
+                  />
+                </div>
+                <div className="form-group switch-group">
+                  <label>
+                    <input
+                      type="checkbox"
+                      name="is_admin"
+                      checked={formData.is_admin}
+                      onChange={handleInputChange}
+                    />
+                    <span className="switch-label">Admin Privileges</span>
+                  </label>
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="button-secondary" onClick={() => setShowModal(false)}>
+                  Cancel
+                </button>
+                <button type="submit" className="button-primary">
+                  {currentUser ? 'Update User' : 'Create User'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
 

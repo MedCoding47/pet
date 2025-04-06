@@ -1,13 +1,14 @@
 import React, { useState } from "react";
 import api from '../../api';
-import './PostPetSection.css'; // Create this CSS file
+import './PostPetSection.css';
 
-const PostPetSection = () => {
+const PostPetSection = ({ onSuccess }) => {
   const [formData, setFormData] = useState({
     name: "",
     age: "",
     location: "",
     type: "Dog",
+    breed: "",
     picture: null
   });
   const [fileName, setFileName] = useState("");
@@ -35,7 +36,7 @@ const PostPetSection = () => {
 
     // Validate form fields
     if (!formData.name || !formData.age || !formData.location || formData.type === "None" || !formData.picture) {
-      setFormError("Please fill out all fields correctly.");
+      setFormError("Please fill out all required fields.");
       return;
     }
 
@@ -47,6 +48,7 @@ const PostPetSection = () => {
     data.append("location", formData.location);
     data.append("type", formData.type);
     data.append("picture", formData.picture);
+    if (formData.breed) data.append("breed", formData.breed);
 
     try {
       const token = localStorage.getItem('admin-token');
@@ -67,10 +69,18 @@ const PostPetSection = () => {
         age: "",
         location: "",
         type: "Dog",
+        breed: "",
         picture: null
       });
       setFileName("");
       setSuccessMessage("Pet posted successfully!");
+      
+      // Call onSuccess callback if provided
+      if (onSuccess && typeof onSuccess === 'function') {
+        setTimeout(() => {
+          onSuccess();
+        }, 1500);
+      }
     } catch (error) {
       console.error("Error submitting form:", error);
       setFormError(error.response?.data?.message || "Failed to post pet. Please try again.");
@@ -81,7 +91,7 @@ const PostPetSection = () => {
 
   return (
     <div className="post-pet-container">
-      <h2 className="section-title">Post a Pet for Adoption</h2>
+      <h2 className="section-title">Add New Pet</h2>
 
       {formError && <div className="alert error">{formError}</div>}
       {successMessage && <div className="alert success">{successMessage}</div>}
@@ -94,6 +104,7 @@ const PostPetSection = () => {
             name="name"
             value={formData.name}
             onChange={handleChange}
+            className="form-input"
             required
           />
         </div>
@@ -106,8 +117,50 @@ const PostPetSection = () => {
             value={formData.age}
             onChange={handleChange}
             min="0"
+            className="form-input"
             required
           />
+        </div>
+
+        <div className="form-group">
+          <label>Location *</label>
+          <input
+            type="text"
+            name="location"
+            value={formData.location}
+            onChange={handleChange}
+            className="form-input"
+            required
+          />
+        </div>
+
+        <div className="form-group">
+          <label>Breed</label>
+          <input
+            type="text"
+            name="breed"
+            value={formData.breed}
+            onChange={handleChange}
+            className="form-input"
+          />
+        </div>
+
+        <div className="form-group">
+          <label>Type *</label>
+          <select
+            name="type"
+            value={formData.type}
+            onChange={handleChange}
+            className="form-select"
+            required
+          >
+            <option value="Dog">Dog</option>
+            <option value="Cat">Cat</option>
+            <option value="Rabbit">Rabbit</option>
+            <option value="Bird">Bird</option>
+            <option value="Fish">Fish</option>
+            <option value="Other">Other</option>
+          </select>
         </div>
 
         <div className="form-group">
@@ -121,38 +174,11 @@ const PostPetSection = () => {
                 type="file"
                 accept="image/*"
                 onChange={handleFileChange}
+                className="file-input-hidden"
                 required
               />
             </label>
           </div>
-        </div>
-
-        <div className="form-group">
-          <label>Location *</label>
-          <input
-            type="text"
-            name="location"
-            value={formData.location}
-            onChange={handleChange}
-            required
-          />
-        </div>
-
-        <div className="form-group">
-          <label>Type *</label>
-          <select
-            name="type"
-            value={formData.type}
-            onChange={handleChange}
-            required
-          >
-            <option value="Dog">Dog</option>
-            <option value="Cat">Cat</option>
-            <option value="Rabbit">Rabbit</option>
-            <option value="Bird">Bird</option>
-            <option value="Fish">Fish</option>
-            <option value="Other">Other</option>
-          </select>
         </div>
 
         <button 
@@ -165,7 +191,7 @@ const PostPetSection = () => {
               <span className="spinner"></span> Submitting...
             </>
           ) : (
-            "Submit Your Pet"
+            "Add Pet"
           )}
         </button>
       </form>
