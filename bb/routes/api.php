@@ -16,6 +16,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/pets/{id}', [PetController::class, 'destroy']);
 
     // Adopt Forms
+    Route::apiResource('adopt-forms', AdoptFormController::class);
     Route::get('/adopt-forms', [AdoptFormController::class, 'index']);
     Route::post('/adopt-forms', [AdoptFormController::class, 'store']);
     Route::get('/adopt-forms/{id}', [AdoptFormController::class, 'show']);
@@ -55,4 +56,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/users', [UserController::class, 'store']);
     Route::put('/users/{id}', [UserController::class, 'update']);
     Route::delete('/users/{id}', [UserController::class, 'destroy']);
+});
+
+
+use App\Http\Controllers\AdminAdoptionController;
+
+Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
+    Route::get('/adoptions', [AdminAdoptionController::class, 'index']);
+    Route::patch('/adoptions/{id}/status', [AdminAdoptionController::class, 'updateStatus']);
 });

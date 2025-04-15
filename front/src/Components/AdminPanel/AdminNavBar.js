@@ -66,6 +66,11 @@ const AdminNavBar = ({ setCurrentScreen }) => {
            <span>pet management</span>
           </button>
         </li>
+        <li className="nav-item">
+          <button onClick={() => setCurrentScreen('AdminAdoptionList')}>
+           <span>AdminAdoptionList</span>
+          </button>
+        </li>
       </ul>
       <div className="sidebar-footer">
         <button onClick={handleLogout} className="logout-btn">

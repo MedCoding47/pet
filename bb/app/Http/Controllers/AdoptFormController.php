@@ -4,58 +4,65 @@ namespace App\Http\Controllers;
 
 use App\Models\AdoptForm;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class AdoptFormController extends Controller
 {
-    // Get all adoption forms
-    public function index()
-    {
-        $forms = AdoptForm::with(['user', 'pet'])->get();
-        return response()->json($forms);
-    }
-
-    // Create a new adoption form
     public function store(Request $request)
     {
-        $validatedData = $request->validate([
-            'user_id' => 'required|exists:username,id',
-            'pet_id' => 'required|exists:pets,id',
-            'adoption_reason' => 'required|string',
-            'status' => 'sometimes|in:pending,approved,rejected',
-        ]);
+        try {
+            Log::info('Adoption form submission', ['data' => $request->all()]);
 
-        $form = AdoptForm::create($validatedData);
-        return response()->json($form, 201);
-    }
+            $validatedData = $request->validate([
+                'pet_id' => 'required|exists:pets,id',
+                'email' => 'required|email',
+                'phoneNo' => 'required',
+                'adoption_reason' => 'required',
+            ]);
 
-    // Get a specific adoption form by ID
-    public function show($id)
-    {
-        $form = AdoptForm::with(['user', 'pet'])->findOrFail($id);
-        return response()->json($form);
-    }
+            $user = Auth::user();
 
-    // Update an adoption form
-    public function update(Request $request, $id)
-    {
-        $form = AdoptForm::findOrFail($id);
+            if (!$user) {
+                return response()->json([
+                    'message' => 'Vous devez être connecté pour faire une demande d\'adoption.'
+                ], 401);
+            }
 
-        $validatedData = $request->validate([
-            'user_id' => 'sometimes|exists:username,id',
-            'pet_id' => 'sometimes|exists:pets,id',
-            'adoption_reason' => 'sometimes|string',
-            'status' => 'sometimes|in:pending,approved,rejected',
-        ]);
+            // ✅ Empêche toute nouvelle demande d’un utilisateur s’il en a déjà fait une
+            $existingForm = AdoptForm::where('user_id', $user->id)->first();
 
-        $form->update($validatedData);
-        return response()->json($form);
-    }
+            if ($existingForm) {
+                return response()->json([
+                    'message' => 'Vous avez déjà soumis une demande d\'adoption. Une seule demande est autorisée.'
+                ], 403);
+            }
 
-    // Delete an adoption form
-    public function destroy($id)
-    {
-        $form = AdoptForm::findOrFail($id);
-        $form->delete();
-        return response()->json(null, 204);
+            $form = new AdoptForm();
+            $form->pet_id = $request->pet_id;
+            $form->adoption_reason = $request->adoption_reason;
+            $form->contact_phone = $request->phoneNo;
+            $form->contact_email = $request->email;
+            $form->address = $request->livingSituation ?? null;
+            $form->previous_pets = $request->previousExperience ?? null;
+            $form->motivation = $request->familyComposition ?? null;
+            $form->status = 'pending';
+            $form->user_id = $user->id;
+            $form->save();
+
+            return response()->json([
+                'message' => 'Formulaire soumis avec succès',
+                'data' => $form
+            ], 201);
+        } catch (\Exception $e) {
+            Log::error('Error creating adoption form', [
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'message' => 'Erreur lors de la soumission du formulaire',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }

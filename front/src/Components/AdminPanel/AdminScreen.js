@@ -4,7 +4,8 @@ import AdoptingRequests from './AdoptingRequests';
 import AdoptedHistory from './AdoptedHistory';
 import ApprovedRequests from './ApprovedRequests';
 import ListerUtilisateurs from './UserManagement';
-import AdminPetDashboard from './AdminPetDashboard'
+import AdminPetDashboard from './AdminPetDashboard';
+import AdminAdoptionList from './AdminAdoptionList';
 import Dashboard from './Dashboard';
 import './AdminScreen.css';
 
@@ -18,6 +19,7 @@ const AdminScreen = ({ currentScreen }) => {
       {currentScreen === 'adoptedHistory' && <AdoptedHistory />}
       {currentScreen === 'ListerUtilisateurs' && <ListerUtilisateurs />}
       {currentScreen === 'AdminPetDashboard' && <AdminPetDashboard />}
+      {currentScreen === 'AdminAdoptionList' && <AdminAdoptionList />}
     </div>
   );
 };

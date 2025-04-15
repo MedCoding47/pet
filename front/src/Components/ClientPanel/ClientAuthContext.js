@@ -117,6 +117,8 @@ export const ClientAuthProvider = ({ children }) => {
     }
   };
 
+  
+
   return (
     <ClientAuthContext.Provider value={{
       client,
