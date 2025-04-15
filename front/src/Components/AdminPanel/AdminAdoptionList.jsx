@@ -69,12 +69,23 @@ function AdminAdoptionList() {
               <td>{item.status}</td>
               <td>{item.admin_response || "—"}</td>
               <td>
-                <button onClick={() => handleStatusChange(item.id, "approved")} disabled={item.status === "approved"}>
+              {item.status !== "rejected" && (
+                <button
+                  onClick={() => handleStatusChange(item.id, "approved")}
+                  disabled={item.status === "approved"}
+                >
                   ✅ Accepter
                 </button>
-                <button onClick={() => handleStatusChange(item.id, "rejected")} disabled={item.status === "rejected"}>
-                  ❌ Refuser
-                </button>
+                )}
+                {/* Le bouton "Refuser" ne s'affiche pas si la demande est acceptée */}
+                {item.status !== "approved" && (
+                  <button
+                    onClick={() => handleStatusChange(item.id, "rejected")}
+                    disabled={item.status === "rejected"}
+                  >
+                    ❌ Refuser
+                  </button>
+                )}
               </td>
               <td>{new Date(item.created_at).toLocaleDateString()}</td>
             </tr>
