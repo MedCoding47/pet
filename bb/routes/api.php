@@ -65,3 +65,14 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::get('/adoptions', [AdminAdoptionController::class, 'index']);
     Route::patch('/adoptions/{id}/status', [AdminAdoptionController::class, 'updateStatus']);
 });
+
+
+use Illuminate\Http\Request;
+
+Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+    return $request->user(); // ✅ CORRECT : via injection
+});
+
+use App\Http\Controllers\ClientAdoptionController;
+
+Route::middleware('auth:sanctum')->get('/client/adoptions', [ClientAdoptionController::class, 'index']);
