@@ -14,6 +14,7 @@ function ClientDashboard() {
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
   const [activeTab, setActiveTab] = useState('profile');
+  const [isLoading, setIsLoading] = useState(true);
 
   // Fetch client information
   useEffect(() => {
@@ -21,19 +22,19 @@ function ClientDashboard() {
       const token = localStorage.getItem('client_token');
       if (!token) {
         setError("Vous devez être connecté pour voir vos informations.");
+        setIsLoading(false);
         return;
       }
       
       try {
-        // Utilise la route appropriée pour récupérer les informations de l'utilisateur
-        // Nous utilisons /users/{id} où id est l'ID de l'utilisateur courant
-        const userId = localStorage.getItem('user_id'); // Assurez-vous de stocker l'ID utilisateur lors de la connexion
-        const res = await axios.get(`http://localhost:8000/api/users/${userId}`, {
+        // Utiliser la route profile au lieu de /users/{id}
+        const res = await axios.get(`http://localhost:8000/api/profile`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Accept': 'application/json',
           }
         });
+        
         setClientInfo(res.data);
         setFormData({
           name: res.data.name || '',
@@ -41,9 +42,16 @@ function ClientDashboard() {
           password: '',
           confirmPassword: ''
         });
+        
+        // Stocker l'ID utilisateur si ce n'est pas déjà fait
+        if (!localStorage.getItem('user_id')) {
+          localStorage.setItem('user_id', res.data.id);
+        }
       } catch (err) {
         setError("Erreur lors du chargement de vos informations.");
         console.error("Erreur API:", err);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -55,7 +63,6 @@ function ClientDashboard() {
     const fetchAdoptions = async () => {
       const token = localStorage.getItem('client_token');
       if (!token) {
-        setError("Vous devez être connecté pour voir vos demandes.");
         return;
       }
       
@@ -68,13 +75,15 @@ function ClientDashboard() {
         });
         setAdoptionRequests(res.data.requests || []);
       } catch (err) {
-        setError("Erreur lors du chargement de vos demandes d'adoption.");
         console.error("Erreur API:", err);
+        // Ne pas afficher d'erreur ici pour ne pas interférer avec l'affichage du profil
       }
     };
 
-    fetchAdoptions();
-  }, []);
+    if (activeTab === 'adoptions') {
+      fetchAdoptions();
+    }
+  }, [activeTab]);
 
   // Handle form input changes
   const handleInputChange = (e) => {
@@ -85,6 +94,7 @@ function ClientDashboard() {
   // Handle form submission for profile update
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
+    setError(null);
     
     // Validate passwords match if updating password
     if (formData.password && formData.password !== formData.confirmPassword) {
@@ -103,7 +113,6 @@ function ClientDashboard() {
         ...(formData.password && { password: formData.password })
       };
       
-      // Utilise la route de mise à jour appropriée
       await axios.put(`http://localhost:8000/api/users/${userId}`, dataToSend, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -133,7 +142,11 @@ function ClientDashboard() {
         setSuccessMessage(null);
       }, 3000);
     } catch (err) {
-      setError("Erreur lors de la mise à jour du profil.");
+      if (err.response && err.response.data) {
+        setError(err.response.data.message || "Erreur lors de la mise à jour du profil.");
+      } else {
+        setError("Erreur lors de la mise à jour du profil.");
+      }
       console.error("Erreur API:", err);
     }
   };
@@ -145,7 +158,6 @@ function ClientDashboard() {
       const userId = localStorage.getItem('user_id');
       
       try {
-        // Utilise la route de suppression appropriée
         await axios.delete(`http://localhost:8000/api/users/${userId}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -165,8 +177,19 @@ function ClientDashboard() {
   };
 
   const renderProfileContent = () => {
-    if (!clientInfo) {
+    if (isLoading) {
       return <div className="loading">Chargement des informations...</div>;
+    }
+    
+    if (!clientInfo) {
+      return (
+        <div className="error-state">
+          <p>Impossible de charger vos informations. Veuillez vous reconnecter.</p>
+          <button onClick={() => window.location.href = '/login'} className="primary-button">
+            Se connecter
+          </button>
+        </div>
+      );
     }
 
     return isEditing ? (
@@ -380,6 +403,19 @@ function ClientDashboard() {
           background-color: #e8f5e9;
           color: #2e7d32;
           border: 1px solid #a5d6a7;
+        }
+        
+        /* État d'erreur */
+        .error-state {
+          text-align: center;
+          padding: 40px 20px;
+          background-color: #f5f5f5;
+          border-radius: 8px;
+        }
+        
+        .error-state p {
+          margin-bottom: 20px;
+          color: #616161;
         }
         
         /* En-tête du dashboard */

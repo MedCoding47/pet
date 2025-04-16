@@ -50,9 +50,13 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
 use App\Http\Controllers\UserController;
-
 Route::middleware('auth:sanctum')->group(function () {
+    // Route pour le profil de l'utilisateur connecté
+    Route::get('/profile', [UserController::class, 'profile']);
+    
+    // Routes pour les utilisateurs
     Route::get('/users', [UserController::class, 'index']);
+    Route::get('/users/{id}', [UserController::class, 'show']);
     Route::post('/users', [UserController::class, 'store']);
     Route::put('/users/{id}', [UserController::class, 'update']);
     Route::delete('/users/{id}', [UserController::class, 'destroy']);
