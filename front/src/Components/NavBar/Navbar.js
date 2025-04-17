@@ -51,73 +51,76 @@ const Navbar = (props) => {
   };
 
   return (
-    <nav className={`navbar-main ${isScrolled ? 'scrolled' : ''}`}>
-      <div className="navbar-container">
-        <div className="logo-section">
-          <Link to="/" className="logo-container">
-            <h1 className="logo-text">Adopt<span className="logo-accent">one.</span></h1>
-          </Link>
-          <button className="menu-toggle" onClick={toggleMobileMenu}>
-            <span className={`menu-icon ${mobileMenuOpen ? 'open' : ''}`}></span>
-          </button>
-        </div>
-
-        <div className={`navbar-menu ${mobileMenuOpen ? 'open' : ''}`}>
-          <ul className="navbar-links">
-            <li><Link to="/">Accueil</Link></li>
-            <li><Link to="/about">À propos</Link></li>
-            <li><Link to="/pets">Animaux</Link></li>
-            <li><Link to="/services">Nos refuges</Link></li>
-            <li><Link to="/contact">Contact</Link></li>
-          </ul>
-        </div>
-
-        <div className="navbar-actions">
-          <div className="search-icon">
-            <i className="fa fa-search"></i>
-          </div>
-          
-          <div className="auth-section">
-            {!isAuthenticated ? (
-              <Link to="/connexion">
-                <button className="btn-auth">Connexion</button>
-              </Link>
-            ) : (
-              <div className="user-menu" ref={dropdownRef}>
-                <button className="btn-user" onClick={toggleUserDropdown}>
-                  <span className="user-greeting">Bonjour, {client?.name}</span>
-                  <i className={`fa fa-chevron-${userDropdownOpen ? 'up' : 'down'}`}></i>
-                </button>
-                {userDropdownOpen && (
-                  <div className="dropdown-menu">
-                    <Link to="/client/dashboard" className="dropdown-item">
-                      <i className="fa fa-user dropdown-icon"></i>
-                      Mon compte
-                    </Link>
-                    <Link to="/client/favorites" className="dropdown-item">
-                      <i className="fa fa-heart dropdown-icon"></i>
-                      Mes favoris
-                    </Link>
-                    <Link to="/client/applications" className="dropdown-item">
-                      <i className="fa fa-file-text dropdown-icon"></i>
-                      Mes demandes
-                    </Link>
-                    <button onClick={logout} className="dropdown-item logout-item">
-                      <i className="fa fa-sign-out dropdown-icon"></i>
-                      Déconnexion
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
+    <>
+      <nav className={`navbar-main ${isScrolled ? 'scrolled' : ''}`}>
+        <div className="navbar-container">
+          <div className="logo-section">
+            <Link to="/" className="logo-container">
+              <h1 className="logo-text">Adopt<span className="logo-accent">one.</span></h1>
+            </Link>
+            <button className="menu-toggle" onClick={toggleMobileMenu}>
+              <span className={`menu-icon ${mobileMenuOpen ? 'open' : ''}`}></span>
+            </button>
           </div>
 
-          <Link to="/don">
-            <button className="btn-donate">Faire un don</button>
-          </Link>
+          <div className={`navbar-menu ${mobileMenuOpen ? 'open' : ''}`}>
+            <ul className="navbar-links">
+              <li><Link to="/">Accueil</Link></li>
+              <li><Link to="/about">À propos</Link></li>
+              <li><Link to="/pets">Animaux</Link></li>
+              <li><Link to="/services">Nos refuges</Link></li>
+              <li><Link to="/contact">Contact</Link></li>
+            </ul>
+          </div>
+
+          <div className="navbar-actions">
+            <div className="search-icon">
+              <i className="fa fa-search"></i>
+            </div>
+            
+            <div className="auth-section">
+              {!isAuthenticated ? (
+                <Link to="/connexion">
+                  <button className="btn-auth">Connexion</button>
+                </Link>
+              ) : (
+                <div className="user-menu" ref={dropdownRef}>
+                  <button className="btn-user" onClick={toggleUserDropdown}>
+                    <span className="user-greeting">Bonjour, {client?.name}</span>
+                    <i className={`fa fa-chevron-${userDropdownOpen ? 'up' : 'down'}`}></i>
+                  </button>
+                  {userDropdownOpen && (
+                    <div className="dropdown-menu">
+                      <Link to="/client/dashboard" className="dropdown-item">
+                        <i className="fa fa-user dropdown-icon"></i>
+                        Mon compte
+                      </Link>
+                      <Link to="/client/favorites" className="dropdown-item">
+                        <i className="fa fa-heart dropdown-icon"></i>
+                        Mes favoris
+                      </Link>
+                      <Link to="/client/applications" className="dropdown-item">
+                        <i className="fa fa-file-text dropdown-icon"></i>
+                        Mes demandes
+                      </Link>
+                      <button onClick={logout} className="dropdown-item logout-item">
+                        <i className="fa fa-sign-out dropdown-icon"></i>
+                        Déconnexion
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <Link to="/don">
+              <button className="btn-donate">Faire un don</button>
+            </Link>
+          </div>
         </div>
-      </div>
-    </nav>
+      </nav>
+      <div className="navbar-spacer"></div>
+    </>
   );
 };
 
