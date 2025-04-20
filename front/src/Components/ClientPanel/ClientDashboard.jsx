@@ -1,5 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
+import Notifications from '../msg/Notifications';
+import Messaging from '../msg/Messaging';
 
 function ClientDashboard() {
   const [clientInfo, setClientInfo] = useState(null);
@@ -15,6 +17,9 @@ function ClientDashboard() {
   const [successMessage, setSuccessMessage] = useState(null);
   const [activeTab, setActiveTab] = useState('profile');
   const [isLoading, setIsLoading] = useState(true);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [showMessaging, setShowMessaging] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   // Fetch client information
   useEffect(() => {
@@ -27,7 +32,6 @@ function ClientDashboard() {
       }
       
       try {
-        // Utiliser la route profile au lieu de /users/{id}
         const res = await axios.get(`http://localhost:8000/api/profile`, {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -43,7 +47,6 @@ function ClientDashboard() {
           confirmPassword: ''
         });
         
-        // Stocker l'ID utilisateur si ce n'est pas déjà fait
         if (!localStorage.getItem('user_id')) {
           localStorage.setItem('user_id', res.data.id);
         }
@@ -62,9 +65,7 @@ function ClientDashboard() {
   useEffect(() => {
     const fetchAdoptions = async () => {
       const token = localStorage.getItem('client_token');
-      if (!token) {
-        return;
-      }
+      if (!token) return;
       
       try {
         const res = await axios.get("http://localhost:8000/api/client/adoptions", {
@@ -76,7 +77,6 @@ function ClientDashboard() {
         setAdoptionRequests(res.data.requests || []);
       } catch (err) {
         console.error("Erreur API:", err);
-        // Ne pas afficher d'erreur ici pour ne pas interférer avec l'affichage du profil
       }
     };
 
@@ -85,18 +85,39 @@ function ClientDashboard() {
     }
   }, [activeTab]);
 
-  // Handle form input changes
+  // Check for unread notifications
+  useEffect(() => {
+    const checkUnreadNotifications = async () => {
+      const token = localStorage.getItem('client_token');
+      if (!token) return;
+      
+      try {
+        const res = await axios.get('http://localhost:8000/api/notifications/unread', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json',
+          }
+        });
+        setUnreadCount(res.data.length);
+      } catch (err) {
+        console.error("Erreur API:", err);
+      }
+    };
+
+    checkUnreadNotifications();
+    const interval = setInterval(checkUnreadNotifications, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
-  // Handle form submission for profile update
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
     setError(null);
     
-    // Validate passwords match if updating password
     if (formData.password && formData.password !== formData.confirmPassword) {
       setError("Les mots de passe ne correspondent pas.");
       return;
@@ -106,7 +127,6 @@ function ClientDashboard() {
     const userId = localStorage.getItem('user_id');
     
     try {
-      // Only send password if it's provided
       const dataToSend = {
         name: formData.name,
         email: formData.email,
@@ -123,21 +143,18 @@ function ClientDashboard() {
       setSuccessMessage("Profil mis à jour avec succès!");
       setIsEditing(false);
       
-      // Update the client info in state
       setClientInfo({
         ...clientInfo,
         name: formData.name,
         email: formData.email
       });
       
-      // Clear password fields
       setFormData({
         ...formData,
         password: '',
         confirmPassword: ''
       });
       
-      // Clear success message after 3 seconds
       setTimeout(() => {
         setSuccessMessage(null);
       }, 3000);
@@ -151,7 +168,6 @@ function ClientDashboard() {
     }
   };
 
-  // Handle account deletion
   const handleDeleteAccount = async () => {
     if (window.confirm("Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.")) {
       const token = localStorage.getItem('client_token');
@@ -165,7 +181,6 @@ function ClientDashboard() {
           }
         });
         
-        // Clear token and redirect to login page
         localStorage.removeItem('client_token');
         localStorage.removeItem('user_id');
         window.location.href = '/login';
@@ -362,7 +377,49 @@ function ClientDashboard() {
           {renderContent()}
         </main>
       </div>
-      
+
+      {/* Communication buttons */}
+      <div className="communication-buttons">
+        <button 
+          onClick={() => setShowNotifications(true)} 
+          className="notification-button"
+        >
+          🔔 Notifications {unreadCount > 0 && <span className="badge">{unreadCount}</span>}
+        </button>
+        
+        <button 
+          onClick={() => {
+            setShowMessaging(true);
+            setShowNotifications(false);
+          }} 
+          className="message-button"
+        >
+          ✉️ Contacter l'admin
+        </button>
+      </div>
+
+      {/* Notifications modal */}
+      {showNotifications && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <Notifications onClose={() => setShowNotifications(false)} />
+          </div>
+        </div>
+      )}
+
+      {/* Messaging modal */}
+      {showMessaging && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <Messaging 
+              recipientId={1} // ID de l'admin
+              recipientName="Administrateur" 
+              onClose={() => setShowMessaging(false)}
+            />
+          </div>
+        </div>
+      )}
+
       <style jsx>{`
         /* Reset et styles généraux */
         * {
@@ -377,6 +434,7 @@ function ClientDashboard() {
           margin: 0 auto;
           padding: 20px;
           color: #333;
+          position: relative;
         }
         
         h2 {
@@ -650,6 +708,58 @@ function ClientDashboard() {
           color: #283593;
         }
         
+        /* Communication buttons */
+        .communication-buttons {
+          position: fixed;
+          bottom: 20px;
+          right: 20px;
+          display: flex;
+          gap: 10px;
+          z-index: 100;
+        }
+        
+        .notification-button, .message-button {
+          padding: 10px 15px;
+          background-color: #1a237e;
+          color: white;
+          border: none;
+          border-radius: 20px;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .badge {
+          background-color: #ff5722;
+          border-radius: 50%;
+          padding: 2px 6px;
+          font-size: 0.8rem;
+          margin-left: 5px;
+        }
+        
+        /* Modal styles */
+        .modal-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background-color: rgba(0, 0, 0, 0.5);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          z-index: 1000;
+        }
+        
+        .modal-content {
+          background: white;
+          border-radius: 8px;
+          max-height: 90vh;
+          overflow-y: auto;
+          box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+        }
+        
         /* Responsive */
         @media (max-width: 768px) {
           .client-dashboard {
@@ -666,6 +776,17 @@ function ClientDashboard() {
           
           .adoption-cards {
             grid-template-columns: 1fr;
+          }
+          
+          .communication-buttons {
+            flex-direction: column;
+            bottom: 10px;
+            right: 10px;
+          }
+          
+          .notification-button, .message-button {
+            padding: 8px 12px;
+            font-size: 0.9rem;
           }
         }
       `}</style>

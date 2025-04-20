@@ -2,7 +2,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\AdoptForm;
+use App\Models\Notification;
+use App\Models\User;
 use Illuminate\Http\Request;
+use App\Services\NotificationService;
 
 class AdminAdoptionController extends Controller
 {
@@ -26,6 +29,11 @@ class AdminAdoptionController extends Controller
         $form->status = $validated['status'];
         $form->admin_response = $validated['admin_response'] ?? null;
         $form->save();
+
+        // Send notification to user if form has a user
+        if ($form->user_id) {
+            NotificationService::notifyUserAboutAdoptionStatus($form);
+        }
 
         return response()->json([
             'message' => 'Demande mise à jour avec succès.',

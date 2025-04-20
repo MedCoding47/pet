@@ -74,9 +74,7 @@ const Navbar = (props) => {
           </div>
 
           <div className="navbar-actions">
-            <div className="search-icon">
-              <i className="fa fa-search"></i>
-            </div>
+           
             
             <div className="auth-section">
               {!isAuthenticated ? (
@@ -113,9 +111,7 @@ const Navbar = (props) => {
               )}
             </div>
 
-            <Link to="/don">
-              <button className="btn-donate">Faire un don</button>
-            </Link>
+           
           </div>
         </div>
       </nav>

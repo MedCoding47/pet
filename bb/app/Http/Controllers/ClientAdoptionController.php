@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
@@ -7,16 +8,13 @@ use Illuminate\Support\Facades\Auth;
 
 class ClientAdoptionController extends Controller
 {
-    public function index(Request $request)
-{
-    $user = $request->user();
+    public function index()
+    {
+        $requests = AdoptForm::with(['pet'])
+            ->where('user_id', Auth::id())
+            ->orderBy('created_at', 'desc')
+            ->get();
 
-    $requests = AdoptForm::with('pet')
-        ->where('user_id', $user->id)
-        ->orderByDesc('created_at')
-        ->get();
-
-    return response()->json(['requests' => $requests]);
-}
-
+        return response()->json($requests);
+    }
 }

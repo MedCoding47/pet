@@ -80,3 +80,17 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 use App\Http\Controllers\ClientAdoptionController;
 
 Route::middleware('auth:sanctum')->get('/client/adoptions', [ClientAdoptionController::class, 'index']);
+
+use App\Http\Controllers\NotificationController;
+
+// Add these routes to your existing api.php
+Route::middleware('auth:sanctum')->group(function () {
+    // Notifications routes
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
+    Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
+    Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount']);
+    
+    // Client adoption routes
+    Route::get('/client/adoptions', [ClientAdoptionController::class, 'index']);
+});
